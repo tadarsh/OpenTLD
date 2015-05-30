@@ -18,7 +18,7 @@ class FaceDetection
 public:
     FaceDetection();
     FaceDetection (string haarcascade_path);
-    Rect detectFace(Mat frame);
+    vector<Rect> detectFace(Mat frame);
     ~FaceDetection();
 
 private:

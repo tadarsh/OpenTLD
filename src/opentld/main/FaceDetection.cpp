@@ -28,7 +28,7 @@ FaceDetection::FaceDetection(string haarcascade_path)
     face_cascade.load(haarcascade_path);
 
 }
-Rect FaceDetection::detectFace(Mat frame)
+vector<Rect> FaceDetection::detectFace(Mat frame)
 {
     std::vector<Rect> faces;
     Mat frame_gray;
@@ -39,14 +39,7 @@ Rect FaceDetection::detectFace(Mat frame)
     //-- Detect faces
     face_cascade.detectMultiScale( frame_gray, faces, 1.1, 4, 0|CV_HAAR_SCALE_IMAGE, Size(30, 30) );
     
-    
-    if(faces.size() >= 1)
-        return faces[0]; 
-    else
-    {
-        Rect r(0, 0, 0, 0);
-        return r;
-    }
+    return faces;    
 }
 
 

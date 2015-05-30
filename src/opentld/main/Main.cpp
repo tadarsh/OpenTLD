@@ -116,9 +116,12 @@ void Main::doWork()
         {
             cvReleaseImage(&img);
             img = imAcqGetImg(imAcq);
-            Rect r = fd.detectFace(Mat(img));
-            cout << r << endl;    
-
+            if (tld->currBB == NULL)
+            {
+                vector<Rect> faces = fd.detectFace(Mat(img));
+                cout << faces.size() << endl; 
+                //tld->selectObject(grey, &r);
+            }
             if(img == NULL)
             {
                 printf("current image is NULL, assuming end of input.\n");
