@@ -81,6 +81,16 @@ Config::~Config()
 {
 }
 
+int Config::init_video(std::string video_path)
+{
+    m_settings.m_method = IMACQ_VID;
+    m_methodSet = true; 
+    m_settings.m_imagePath = video_path;
+    m_imagePathSet = true;
+    return SUCCESS;
+
+}
+
 int Config::init(int argc, char **argv)
 {
     // check cli arguments

@@ -40,11 +40,13 @@ int main(int argc, char **argv)
 
     main->gui = gui;
     main->imAcq = imAcq;
+    
+    config.init_video(std::string(argv[1]));
 
-    if(config.init(argc, argv) == PROGRAM_EXIT)
-    {
-        return EXIT_FAILURE;
-    }
+    //if(config.init(argc, argv) == PROGRAM_EXIT)
+    //{
+    //    return EXIT_FAILURE;
+    //}
 
     config.configure(main);
 

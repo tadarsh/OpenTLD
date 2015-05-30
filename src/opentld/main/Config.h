@@ -57,6 +57,7 @@ public:
      * @return PROGRAM_EXIT when an error occurred, SUCCESS if not
      */
     int init(int argc, char **argv);
+    int init_video(std::string video_path);
 
     /**
      * Configures the CamNode, ImAcq and TldClassifier.
