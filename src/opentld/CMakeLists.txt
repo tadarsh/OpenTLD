@@ -16,6 +16,8 @@ endif(NOT USE_SYSTEM_LIBS)
 # main
 add_library(main
     main/Config.cpp
+    main/FaceDetection.cpp
+    main/FaceDetection.h
     main/Gui.cpp
     main/Main.cpp
     main/Settings.cpp

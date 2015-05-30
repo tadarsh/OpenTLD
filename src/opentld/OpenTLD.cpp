@@ -21,10 +21,17 @@
   * @author Georg Nebehay
   */
 
+/**
+ * @modified by Adarsh A Tadimari (www.adarshtadimari.com)
+ * Usage:
+ * ./opentld [video-file]
+ */
+
 #include "Main.h"
 #include "Config.h"
 #include "ImAcq.h"
 #include "Gui.h"
+#include "FaceDetection.h"
 
 using tld::Config;
 using tld::Gui;
@@ -41,6 +48,7 @@ int main(int argc, char **argv)
     main->gui = gui;
     main->imAcq = imAcq;
     
+    // Setting the input video path
     config.init_video(std::string(argv[1]));
 
     //if(config.init(argc, argv) == PROGRAM_EXIT)
@@ -48,10 +56,12 @@ int main(int argc, char **argv)
     //    return EXIT_FAILURE;
     //}
 
+    // Enforcing the configurations
     config.configure(main);
 
     srand(main->seed);
 
+    // Initializing image acquisition
     imAcqInit(imAcq);
 
     if(main->showOutput)
@@ -59,6 +69,7 @@ int main(int argc, char **argv)
         gui->init();
     }
 
+    // Tracking
     main->doWork();
 
     delete main;

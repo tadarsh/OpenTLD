@@ -30,6 +30,7 @@
 #include "Gui.h"
 #include "TLDUtil.h"
 #include "Trajectory.h"
+#include "FaceDetection.h"
 
 using namespace tld;
 using namespace cv;
@@ -44,6 +45,11 @@ void Main::doWork()
     tld->detectorCascade->imgWidth = grey.cols;
     tld->detectorCascade->imgHeight = grey.rows;
     tld->detectorCascade->imgWidthStep = grey.step;
+
+
+    // Initializing face detector TODO: Add into config
+    FaceDetection fd(std::string("/usr/local/Cellar/opencv/2.4.10.1/share/OpenCV/haarcascades/haarcascade_frontalface_alt.xml"));    
+
 
 	if(showTrajectory)
 	{
@@ -110,6 +116,8 @@ void Main::doWork()
         {
             cvReleaseImage(&img);
             img = imAcqGetImg(imAcq);
+            Rect r = fd.detectFace(Mat(img));
+            cout << r << endl;    
 
             if(img == NULL)
             {
