@@ -120,7 +120,8 @@ void Main::doWork()
             {
                 vector<Rect> faces = fd.detectFace(Mat(img));
                 cout << faces.size() << endl; 
-                //tld->selectObject(grey, &r);
+                if (faces.size() > 0)
+                    tld->selectObject(grey, &faces[0]);
             }
             if(img == NULL)
             {
