@@ -1,21 +1,21 @@
 /*  Copyright 2011 AIT Austrian Institute of Technology
-*
-*   This file is part of OpenTLD.
-*
-*   OpenTLD is free software: you can redistribute it and/or modify
-*   it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
-*   (at your option) any later version.
-*
-*   OpenTLD is distributed in the hope that it will be useful,
-*   but WITHOUT ANY WARRANTY; without even the implied warranty of
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*   GNU General Public License for more details.
-*
-*   You should have received a copy of the GNU General Public License
-*   along with OpenTLD.  If not, see <http://www.gnu.org/licenses/>.
-*
-*/
+ *
+ *   This file is part of OpenTLD.
+ *
+ *   OpenTLD is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   OpenTLD is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with OpenTLD.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 /*
  * MainX.cpp
  *
@@ -31,13 +31,14 @@
 #include "TLDUtil.h"
 #include "Trajectory.h"
 #include "FaceDetection.h"
+#include "Helper.h"
 
 using namespace tld;
 using namespace cv;
 
 void Main::doWork()
 {
-	Trajectory trajectory;
+    Trajectory trajectory;
     IplImage *img = imAcqGetImg(imAcq);
     Mat grey(img->height, img->width, CV_8UC1);
     cvtColor(cvarrToMat(img), grey, CV_BGR2GRAY);
@@ -51,10 +52,10 @@ void Main::doWork()
     FaceDetection fd(std::string("/usr/local/Cellar/opencv/2.4.10.1/share/OpenCV/haarcascades/haarcascade_frontalface_alt.xml"));    
 
 
-	if(showTrajectory)
-	{
-		trajectory.init(trajectoryLength);
-	}
+    if(showTrajectory)
+    {
+        trajectory.init(trajectoryLength);
+    }
 
     if(selectManually)
     {
@@ -108,21 +109,67 @@ void Main::doWork()
         reuseFrameOnce = true;
     }
 
+    int frame_number = imAcqVidGetNextFrameNumber(imAcq) - 3;
+
+    // Reading all frames and detecting all faces in every 10th frame
+    vector<vector<int> > faceID_at_frames;
+    vector<int> frameNo_at_frames;
+    int flag1 = 0;
+    while(imAcqHasMoreFrames(imAcq))
+    {
+        cvReleaseImage(&img);
+        img = imAcqGetImg(imAcq);
+        if (flag1 % 10 == 0)  
+        {
+            vector<int> face_vec;
+            faceID_at_frames.push_back(face_vec);
+            frameNo_at_frames.push_back(imAcqVidGetNextFrameNumber(imAcq));
+            vector<Rect> faces = fd.detectFace(Mat(img));
+            cout << frameNo_at_frames[flag1/10] << ":" << faces.size() << endl;
+            for (int j = 0; j < faces.size() ; ++j)
+                faceID_at_frames[flag1/10].push_back(j);     
+        }
+        flag1++;
+    }
+    
+
     while(imAcqHasMoreFrames(imAcq))
     {
         double tic = cvGetTickCount();
-
         if(!reuseFrameOnce)
         {
             cvReleaseImage(&img);
             img = imAcqGetImg(imAcq);
-            if (tld->currBB == NULL)
+
+            if (frame_number % 10 == 0)
             {
+                cout << 1.0 * frame_number / 10.0 << endl; 
                 vector<Rect> faces = fd.detectFace(Mat(img));
-                cout << faces.size() << endl; 
-                if (faces.size() > 0)
+                cout << faces.size() << endl;
+                if (faces.size() > 0 && tld->currBB != NULL)
+                {
+                    Rect r1(tld->currBB->x, tld->currBB->y, tld->currBB->width, tld->currBB->height);
+                    for (int j = 0; j < faces.size() ; ++j)
+                    {
+                        Rect r2 = faces[j];
+                        cout << findIOU(r1, r2) << ", ";
+                    }
+                    cout << endl;
+                }
+                if (faces.size() > 0 && tld->currBB == NULL)
                     tld->selectObject(grey, &faces[0]);
             }
+            frame_number++;
+
+            /*
+               if (tld->currBB == NULL)
+               {
+               vector<Rect> faces = fd.detectFace(Mat(img));
+            //cout << faces.size()  << endl; 
+            if (faces.size() > 0)
+            tld->selectObject(grey, &faces[0]);
+            }
+            */
             if(img == NULL)
             {
                 printf("current image is NULL, assuming end of input.\n");
@@ -183,23 +230,23 @@ void Main::doWork()
                 CvScalar rectangleColor = (confident) ? blue : yellow;
                 cvRectangle(img, tld->currBB->tl(), tld->currBB->br(), rectangleColor, 8, 8, 0);
 
-				if(showTrajectory)
-				{
-					CvPoint center = cvPoint(tld->currBB->x+tld->currBB->width/2, tld->currBB->y+tld->currBB->height/2);
-					cvLine(img, cvPoint(center.x-2, center.y-2), cvPoint(center.x+2, center.y+2), rectangleColor, 2);
-					cvLine(img, cvPoint(center.x-2, center.y+2), cvPoint(center.x+2, center.y-2), rectangleColor, 2);
-					trajectory.addPoint(center, rectangleColor);
-				}
+                if(showTrajectory)
+                {
+                    CvPoint center = cvPoint(tld->currBB->x+tld->currBB->width/2, tld->currBB->y+tld->currBB->height/2);
+                    cvLine(img, cvPoint(center.x-2, center.y-2), cvPoint(center.x+2, center.y+2), rectangleColor, 2);
+                    cvLine(img, cvPoint(center.x-2, center.y+2), cvPoint(center.x+2, center.y-2), rectangleColor, 2);
+                    trajectory.addPoint(center, rectangleColor);
+                }
             }
-			else if(showTrajectory)
-			{
-				trajectory.addPoint(cvPoint(-1, -1), cvScalar(-1, -1, -1));
-			}
+            else if(showTrajectory)
+            {
+                trajectory.addPoint(cvPoint(-1, -1), cvScalar(-1, -1, -1));
+            }
 
-			if(showTrajectory)
-			{
-				trajectory.drawTrajectory(img);
-			}
+            if(showTrajectory)
+            {
+                trajectory.drawTrajectory(img);
+            }
 
             CvFont font;
             cvInitFont(&font, CV_FONT_HERSHEY_SIMPLEX, .5, .5, 0, 1, 8);

@@ -18,6 +18,8 @@ add_library(main
     main/Config.cpp
     main/FaceDetection.cpp
     main/FaceDetection.h
+    main/Helper.h
+    main/Helper.cpp
     main/Gui.cpp
     main/Main.cpp
     main/Settings.cpp
